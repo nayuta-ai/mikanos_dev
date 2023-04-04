@@ -8,6 +8,7 @@ Provides a Window class that represents a display area.
 #include <optional>
 #include <vector>
 
+#include "frame_buffer.hpp"
 #include "graphics.hpp"
 
 /** @brief The Window class represents a graphics display area.
@@ -23,8 +24,8 @@ class Window {
    public:
     WindowWriter(Window& window) : window_{window} {}
     /* @brief Draws the specified color at the specified position. */
-    virtual void Write(int x, int y, const PixelColor& c) override {
-      window_.At(x, y) = c;
+    virtual void Write(Vector2D<int> pos, const PixelColor& c) override {
+      window_.Write(pos, c);
     }
     /* @brief Returns the width of the associated Window in pixels. */
     virtual int Width() const override { return window_.Width(); }
@@ -38,7 +39,7 @@ class Window {
 
   /** @brief Creates a plain drawing area with the specified number of pixels.
    */
-  Window(int width, int height);
+  Window(int width, int height, PixelFormat shadow_format);
   ~Window() = default;
   Window(const Window& rhs) = delete;
   Window& operator=(const Window& rhs) = delete;
@@ -48,15 +49,16 @@ class Window {
    * @param position The position to draw on the writer, relative to its
    * top-left corner.
    */
-  void DrawTo(PixelWriter& writer, Vector2D<int> position);
+  void DrawTo(FrameBuffer& dst, Vector2D<int> position);
   /* @brief Sets the transparent color. */
   void SetTransparentColor(std::optional<PixelColor> c);
-  /* @brief Gets the WindowWriter associated with this instance. */
+  /** @brief Gets the WindowWriter associated with this instance. */
   WindowWriter* Writer();
-  /** @brief Returns the pixel at the specified position. */
-  PixelColor& At(int x, int y);
+
   /* @brief Returns the pixel at the specified position. */
-  const PixelColor& At(int x, int y) const;
+  const PixelColor& At(Vector2D<int> pos) const;
+  /** @brief Write the pixel at the specified position. */
+  void Write(Vector2D<int> pos, PixelColor c);
 
   /** @brief Returns the width of the drawing area in pixels. */
   int Width() const;
@@ -68,4 +70,6 @@ class Window {
   std::vector<std::vector<PixelColor>> data_{};
   WindowWriter writer_{*this};
   std::optional<PixelColor> transparent_color_{std::nullopt};
+
+  FrameBuffer shadow_buffer_{};
 };

@@ -37,7 +37,7 @@ class Layer {
   */
   Layer& MoveRelative(Vector2D<int> pos_diff);
   /** @brief Draws the contents of the currently set window to the writer. */
-  void DrawTo(PixelWriter& writer) const;
+  void DrawTo(FrameBuffer& screen) const;
 
  private:
   unsigned int id_;
@@ -52,7 +52,7 @@ class LayerManager {
   /* @brief Set the destination to draw when drawing with methods such as
    * Draw().
    */
-  void SetWriter(PixelWriter* writer);
+  void SetWriter(FrameBuffer* screen);
   /** @brief Create a new layer and return a reference to it.
    *
    * The newly created layer is held in a container inside LayerManager.
@@ -82,7 +82,7 @@ class LayerManager {
   void Hide(unsigned int id);
 
  private:
-  PixelWriter* writer_{nullptr};
+  FrameBuffer* screen_{nullptr};
   std::vector<std::unique_ptr<Layer>> layers_{};
   std::vector<Layer*> layer_stack_{};
   unsigned int latest_id_{0};
