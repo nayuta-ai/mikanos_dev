@@ -65,6 +65,15 @@ class Window {
   /* @brief Returns the height of the drawing area in pixels. */
   int Height() const;
 
+  /** @brief Moves a rectangular area within the flat drawing area of this
+   * window.
+   *
+   * @param src_pos The origin of the rectangular area to be moved.
+   * @param src_size The size of the rectangular area to be moved.
+   * @param dst_pos The destination of the origin of the rectangular area.
+   */
+  void Move(Vector2D<int> dst_pos, const Rectangle<int>& src);
+
  private:
   int width_, height_;
   std::vector<std::vector<PixelColor>> data_{};
