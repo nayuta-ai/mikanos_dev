@@ -87,6 +87,10 @@ class LayerManager {
   /* @brief Hide the layer. */
   void Hide(unsigned int id);
 
+  /** @brief Find the top most visible layer with a window at the specified
+   * coordinates. */
+  Layer* FindLayerByPosition(Vector2D<int> pos, unsigned int exclude_id) const;
+
  private:
   FrameBuffer* screen_{nullptr};
   mutable FrameBuffer back_buffer_{};
