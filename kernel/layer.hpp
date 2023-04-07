@@ -29,6 +29,10 @@ class Layer {
   std::shared_ptr<Window> GetWindow() const;
   /** @brief Get the origin coordinates of the layer. */
   Vector2D<int> GetPosition() const;
+  /** @brief true to make the layer draggable. */
+  Layer& SetDraggable(bool draggable);
+  /** @brief Return true if the layer is draggable. */
+  bool IsDraggable() const;
 
   /** @brief Updates the position information of the layer to the specified
    * absolute coordinates.
@@ -44,8 +48,9 @@ class Layer {
 
  private:
   unsigned int id_;
-  Vector2D<int> pos_;
-  std::shared_ptr<Window> window_;
+  Vector2D<int> pos_{};
+  std::shared_ptr<Window> window_{};
+  bool draggable_{false};
 };
 
 /** @brief LayerManager manages multiple layers. */
