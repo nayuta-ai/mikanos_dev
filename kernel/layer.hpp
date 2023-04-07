@@ -27,6 +27,9 @@ class Layer {
   Layer& SetWindow(const std::shared_ptr<Window>& window);
   /* @brief Returns the set window. */
   std::shared_ptr<Window> GetWindow() const;
+  /** @brief Get the origin coordinates of the layer. */
+  Vector2D<int> GetPosition() const;
+
   /** @brief Updates the position information of the layer to the specified
    * absolute coordinates.
    * No redraw is performed.
@@ -37,7 +40,7 @@ class Layer {
   */
   Layer& MoveRelative(Vector2D<int> pos_diff);
   /** @brief Draws the contents of the currently set window to the writer. */
-  void DrawTo(FrameBuffer& screen) const;
+  void DrawTo(FrameBuffer& screen, const Rectangle<int>& area) const;
 
  private:
   unsigned int id_;
@@ -59,7 +62,10 @@ class LayerManager {
    */
   Layer& NewLayer();
   /** @brief Draw the currently displayed layers. */
-  void Draw() const;
+  void Draw(const Rectangle<int>& area) const;
+  /** @brief Redraws within the drawing area of the window set on the specified
+   * layer. */
+  void Draw(unsigned int id) const;
 
   /** @brief Update the position information of the layer to the specified
    * absolute coordinate without redrawing.

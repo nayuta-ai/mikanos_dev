@@ -44,12 +44,13 @@ class Window {
   Window(const Window& rhs) = delete;
   Window& operator=(const Window& rhs) = delete;
 
-  /** @brief Draws the display area of this window to the specified PixelWriter.
-   * @param writer The destination of the drawing.
-   * @param position The position to draw on the writer, relative to its
-   * top-left corner.
+  /** @brief Draw the display area of this window in the given FrameBuffer.
+   *
+   * @param dst where to draw to
+   * @param pos The window position relative to the upper left of dst
+   * @param area The area to be drawn with respect to the upper left of dst
    */
-  void DrawTo(FrameBuffer& dst, Vector2D<int> position);
+  void DrawTo(FrameBuffer& dst, Vector2D<int> pos, const Rectangle<int>& area);
   /* @brief Sets the transparent color. */
   void SetTransparentColor(std::optional<PixelColor> c);
   /** @brief Gets the WindowWriter associated with this instance. */
@@ -62,8 +63,10 @@ class Window {
 
   /** @brief Returns the width of the drawing area in pixels. */
   int Width() const;
-  /* @brief Returns the height of the drawing area in pixels. */
+  /** @brief Returns the height of the drawing area in pixels. */
   int Height() const;
+  /** @brief Returns the size of the drawing area in pixels. */
+  Vector2D<int> Size() const;
 
   /** @brief Moves a rectangular area within the flat drawing area of this
    * window.
