@@ -1,7 +1,7 @@
 /**
  * @file register.hpp
  *
- * メモリマップトレジスタを読み書きする機能を提供する．
+ * Provides functions to read and write memory-mapped registers.
  */
 
 #pragma once
@@ -50,9 +50,7 @@ template <typename T>
 struct DefaultBitmap {
   T data[1];
 
-  DefaultBitmap& operator =(const T& value) {
-    data[0] = value;
-  }
+  DefaultBitmap& operator=(const T& value) { data[0] = value; }
   operator T() const { return data[0]; }
 };
 
@@ -77,8 +75,7 @@ class ArrayWrapper {
   using ConstIterator = const ValueType*;
 
   ArrayWrapper(uintptr_t array_base_addr, size_t size)
-      : array_(reinterpret_cast<ValueType*>(array_base_addr)),
-        size_(size) {}
+      : array_(reinterpret_cast<ValueType*>(array_base_addr)), size_(size) {}
 
   size_t Size() const { return size_; }
 
@@ -89,7 +86,7 @@ class ArrayWrapper {
   ConstIterator cbegin() const { return array_; }
   ConstIterator cend() const { return array_ + size_; }
 
-  ValueType& operator [](size_t index) { return array_[index]; }
+  ValueType& operator[](size_t index) { return array_[index]; }
 
  private:
   ValueType* const array_;

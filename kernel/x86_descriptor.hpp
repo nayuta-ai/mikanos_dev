@@ -1,3 +1,9 @@
+/**
+ * @file x86_descriptor.hpp
+ *
+ * file with common definitions for segment and interrupt descriptors.
+ */
+
 #pragma once
 
 enum class DescriptorType {

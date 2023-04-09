@@ -1,9 +1,16 @@
+/**
+ * @file memory_manager.hpp
+ *
+ * File containing memory management classes and peripheral functions.
+ */
+
 #pragma once
 
 #include <array>
 #include <limits>
 
 #include "error.hpp"
+#include "memory_map.hpp"
 
 namespace {
 constexpr unsigned long long operator""_KiB(unsigned long long kib) {
@@ -19,6 +26,7 @@ constexpr unsigned long long operator""_GiB(unsigned long long gib) {
 }
 }  // namespace
 
+/** @brief Size of one physical memory frame (bytes) */
 static const auto kBytesPerFrame{4_KiB};
 
 class FrameID {
@@ -85,4 +93,4 @@ class BitmapMemoryManager {
   void SetBit(FrameID frame, bool allocated);
 };
 
-Error InitializeHeap(BitmapMemoryManager &memory_manager);
+void InitializeMemoryManager(const MemoryMap &memory_map);

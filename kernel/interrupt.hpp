@@ -1,14 +1,16 @@
 /**
  * @file interrupt.hpp
  *
- * 割り込み用のプログラムを集めたファイル．
+ * File containing programs for interrupts.
  */
 
 #pragma once
 
 #include <array>
 #include <cstdint>
+#include <deque>
 
+#include "message.hpp"
 #include "x86_descriptor.hpp"
 
 union InterruptDescriptorAttribute {
@@ -64,3 +66,5 @@ struct InterruptFrame {
 };
 
 void NotifyEndOfInterrupt();
+
+void InitializeInterrupt(std::deque<Message>* msg_queue);
