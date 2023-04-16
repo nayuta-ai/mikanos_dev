@@ -4,6 +4,7 @@
 
 #include "console.hpp"
 #include "logger.hpp"
+#include "timer.hpp"
 
 Layer::Layer(unsigned int id) : id_{id} {}
 
@@ -61,13 +62,19 @@ void LayerManager::Draw(const Rectangle<int>& area) const {
   screen_->Copy(area.pos, back_buffer_, area);
 }
 
-void LayerManager::Draw(unsigned int id) const {
+void LayerManager::Draw(unsigned int id) const { Draw(id, {{0, 0}, {-1, -1}}); }
+
+void LayerManager::Draw(unsigned int id, Rectangle<int> area) const {
   bool draw = false;
   Rectangle<int> window_area;
   for (auto layer : layer_stack_) {
     if (layer->ID() == id) {
       window_area.size = layer->GetWindow()->Size();
       window_area.pos = layer->GetPosition();
+      if (area.size.x >= 0 || area.size.y >= 0) {
+        area.pos = area.pos + window_area.pos;
+        window_area = window_area & area;
+      }
       draw = true;
     }
     if (draw) {
@@ -246,7 +253,24 @@ void ProcessLayerMessage(const Message& msg) {
       layer_manager->MoveRelative(arg.layer_id, {arg.x, arg.y});
       break;
     case LayerOperation::Draw:
+      if (arg.layer_id == 7) {
+        auto start = LAPICTimerElapsed();
+        layer_manager->Draw(arg.layer_id);
+        auto elapsed = LAPICTimerElapsed() - start;
+        Log(kWarn, "draw layer 7: elapsed = %u\n", elapsed);
+        break;
+      }
       layer_manager->Draw(arg.layer_id);
+      break;
+    case LayerOperation::DrawArea:
+      if (arg.layer_id == 7) {
+        auto start = LAPICTimerElapsed();
+        layer_manager->Draw(arg.layer_id, {{arg.x, arg.y}, {arg.w, arg.h}});
+        auto elapsed = LAPICTimerElapsed() - start;
+        Log(kWarn, "draw layer 7: elapsed = %u\n", elapsed);
+        break;
+      }
+      layer_manager->Draw(arg.layer_id, {{arg.x, arg.y}, {arg.w, arg.h}});
       break;
   }
 }
