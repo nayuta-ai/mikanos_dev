@@ -10,12 +10,13 @@ void Erase(T& c, const U& value) {
   auto it = std::remove(c.begin(), c.end(), value);
   c.erase(it, c.end());
 }
+
 void TaskIdle(uint64_t task_id, int64_t data) {
   while (true) __asm__("hlt");
 }
 }  // namespace
 
-Task::Task(uint64_t id) : id_{id} {}
+Task::Task(uint64_t id) : id_{id}, msgs_{} {}
 
 Task& Task::InitContext(TaskFunc* f, int64_t data) {
   const size_t stack_size = kDefaultStackBytes / sizeof(stack_[0]);
@@ -33,7 +34,7 @@ Task& Task::InitContext(TaskFunc* f, int64_t data) {
   context_.rdi = id_;
   context_.rsi = data;
 
-  // mask all MXCSR exceptions.
+  // MXCSR のすべての例外をマスクする
   *reinterpret_cast<uint32_t*>(&context_.fxsave_area[24]) = 0x1f80;
 
   return *this;
@@ -101,6 +102,7 @@ void TaskManager::SwitchTask(bool current_sleep) {
       }
     }
   }
+
   Task* next_task = running_[current_level_].front();
 
   SwitchContext(&next_task->Context(), &current_task->Context());
