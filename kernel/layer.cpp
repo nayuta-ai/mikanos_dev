@@ -210,6 +210,7 @@ void ActiveLayer::Activate(unsigned int layer_id) {
 }
 
 ActiveLayer* active_layer;
+std::map<unsigned int, uint64_t>* layer_task_map;
 
 void InitializeLayer() {
   const auto screen_size = ScreenSize();
@@ -241,6 +242,8 @@ void InitializeLayer() {
   layer_manager->UpDown(console->LayerID(), 1);
 
   active_layer = new ActiveLayer{*layer_manager};
+
+  layer_task_map = new std::map<unsigned int, uint64_t>;
 }
 
 void ProcessLayerMessage(const Message& msg) {
@@ -253,23 +256,9 @@ void ProcessLayerMessage(const Message& msg) {
       layer_manager->MoveRelative(arg.layer_id, {arg.x, arg.y});
       break;
     case LayerOperation::Draw:
-      if (arg.layer_id == 7) {
-        auto start = LAPICTimerElapsed();
-        layer_manager->Draw(arg.layer_id);
-        auto elapsed = LAPICTimerElapsed() - start;
-        Log(kWarn, "draw layer 7: elapsed = %u\n", elapsed);
-        break;
-      }
       layer_manager->Draw(arg.layer_id);
       break;
     case LayerOperation::DrawArea:
-      if (arg.layer_id == 7) {
-        auto start = LAPICTimerElapsed();
-        layer_manager->Draw(arg.layer_id, {{arg.x, arg.y}, {arg.w, arg.h}});
-        auto elapsed = LAPICTimerElapsed() - start;
-        Log(kWarn, "draw layer 7: elapsed = %u\n", elapsed);
-        break;
-      }
       layer_manager->Draw(arg.layer_id, {{arg.x, arg.y}, {arg.w, arg.h}});
       break;
   }
