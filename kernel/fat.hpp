@@ -73,7 +73,7 @@ struct DirectoryEntry {
 
 // Pointer to the boot volume image
 extern BPB* boot_volume_image;
-
+extern unsigned long bytes_per_cluster;
 // Initializes the volume image
 void Initialize(void* volume_image);
 
@@ -101,4 +101,25 @@ T* GetSectorByCluster(unsigned long cluster) {
  *@param ext An array of 4 or more bytes to store the extension
  */
 void ReadName(const DirectoryEntry& entry, char* base, char* ext);
+
+static const unsigned long kEndOfClusterchain = 0x0ffffffflu;
+
+/** @brief Returns the next cluster number for the specified cluster.
+ *
+ * @param cluster cluster number
+ * @return next cluster number (or kEndOfClusterchain if none)
+ */
+unsigned long NextCluster(unsigned long cluster);
+
+/** @brief Search for files in the specified directory.
+ *
+ * @param name 8+3 format file name (case insensitive)
+ * @param directory_cluster The starting cluster of the directory (if omitted,
+ * search from the root directory)
+ * @return Entry representing the file. If not found, nullptr.
+ */
+DirectoryEntry* FindFile(const char* name, unsigned long directory_cluster = 0);
+
+bool NameIsEqual(const DirectoryEntry& entry, const char* name);
+
 }  // namespace fat
