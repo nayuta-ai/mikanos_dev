@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 namespace fat {
@@ -121,5 +122,14 @@ unsigned long NextCluster(unsigned long cluster);
 DirectoryEntry* FindFile(const char* name, unsigned long directory_cluster = 0);
 
 bool NameIsEqual(const DirectoryEntry& entry, const char* name);
+
+/** @brief Copies the contents of the specified file to a buffer.
+ *
+ * @param buf Destination of file contents.
+ * @param len Size of buffer (in bytes)
+ * @param entry Directory entry representing the file
+ * @return Number of bytes read.
+ */
+size_t LoadFile(void* buf, size_t len, const DirectoryEntry& entry);
 
 }  // namespace fat
