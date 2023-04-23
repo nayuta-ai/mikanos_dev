@@ -1,2 +1,2 @@
 TARGET = large
-include ../Makefile.lefapp
+include ../Makefile.elfapp

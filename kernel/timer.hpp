@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <queue>
 #include <vector>
-#include <limits>
 
 #include "message.hpp"
 
@@ -47,5 +47,3 @@ const int kTimerFreq = 100;
 
 const int kTaskTimerPeriod = static_cast<int>(kTimerFreq * 0.02);
 const int kTaskTimerValue = std::numeric_limits<int>::min();
-
-void LAPICTimerOnInterrupt();

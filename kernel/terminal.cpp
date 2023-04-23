@@ -5,15 +5,14 @@
 
 #include "asmfunc.h"
 #include "elf.hpp"
-#include "fat.hpp"
 #include "font.hpp"
 #include "layer.hpp"
-#include "logger.hpp"
 #include "memory_manager.hpp"
 #include "paging.hpp"
 #include "pci.hpp"
 
 namespace {
+
 WithError<int> MakeArgVector(char* command, char* first_arg, char** argv,
                              int argv_len, char* argbuf, int argbuf_len) {
   int argc = 0;
@@ -30,6 +29,7 @@ WithError<int> MakeArgVector(char* command, char* first_arg, char** argv,
     argbuf_index += strlen(s) + 1;
     return MAKE_ERROR(Error::kSuccess);
   };
+
   if (auto err = push_to_argv(command)) {
     return {argc, err};
   }
@@ -162,8 +162,7 @@ Error CopyLoadSegments(Elf64_Ehdr* ehdr) {
       return err;
     }
     const auto src = reinterpret_cast<uint8_t*>(ehdr) + phdr[i].p_offset;
-    const auto dst =
-        reinterpret_cast<uint8_t*>(phdr[i].p_vaddr);  // virtual address pointer
+    const auto dst = reinterpret_cast<uint8_t*>(phdr[i].p_vaddr);
     memcpy(dst, src, phdr[i].p_filesz);
     memset(dst + phdr[i].p_filesz, 0, phdr[i].p_memsz - phdr[i].p_filesz);
   }
@@ -234,6 +233,7 @@ Terminal::Terminal() {
 
   layer_id_ =
       layer_manager->NewLayer().SetWindow(window_).SetDraggable(true).ID();
+
   Print(">");
   cmd_history_.resize(8);
 }
@@ -243,6 +243,16 @@ Rectangle<int> Terminal::BlinkCursor() {
   DrawCursor(cursor_visible_);
 
   return {CalcCursorPos(), {7, 15}};
+}
+
+void Terminal::DrawCursor(bool visible) {
+  const auto color = visible ? ToColor(0xffffff) : ToColor(0);
+  FillRectangle(*window_->Writer(), CalcCursorPos(), {7, 15}, color);
+}
+
+Vector2D<int> Terminal::CalcCursorPos() const {
+  return ToplevelWindow::kTopLeftMargin +
+         Vector2D<int>{4 + 8 * cursor_.x, 4 + 16 * cursor_.y};
 }
 
 Rectangle<int> Terminal::InputKey(uint8_t modifier, uint8_t keycode,
@@ -259,6 +269,7 @@ Rectangle<int> Terminal::InputKey(uint8_t modifier, uint8_t keycode,
     }
     linebuf_index_ = 0;
     cmd_history_index_ = -1;
+
     cursor_.x = 0;
     if (cursor_.y < kRows - 1) {
       ++cursor_.y;
@@ -297,16 +308,6 @@ Rectangle<int> Terminal::InputKey(uint8_t modifier, uint8_t keycode,
   return draw_area;
 }
 
-void Terminal::DrawCursor(bool visible) {
-  const auto color = visible ? ToColor(0xffffff) : ToColor(0);
-  FillRectangle(*window_->Writer(), CalcCursorPos(), {7, 15}, color);
-}
-
-Vector2D<int> Terminal::CalcCursorPos() const {
-  return ToplevelWindow::kTopLeftMargin +
-         Vector2D<int>{4 + 8 * cursor_.x, 4 + 16 * cursor_.y};
-}
-
 void Terminal::Scroll1() {
   Rectangle<int> move_src{
       ToplevelWindow::kTopLeftMargin + Vector2D<int>{4, 4 + 16},
@@ -316,56 +317,6 @@ void Terminal::Scroll1() {
                 {8 * kColumns, 16}, {0, 0, 0});
 }
 
-void Terminal::Print(const char* s) {
-  DrawCursor(false);
-  auto newline = [this]() {
-    cursor_.x = 0;
-    if (cursor_.y < kRows - 1) {
-      ++cursor_.y;
-    } else {
-      Scroll1();
-    }
-  };
-
-  while (*s) {
-    if (*s == '\n') {
-      newline();
-    } else {
-      WriteAscii(*window_->Writer(), CalcCursorPos(), *s, {255, 255, 255});
-      if (cursor_.x == kColumns - 1) {
-        newline();
-      } else {
-        ++cursor_.x;
-      }
-    }
-
-    ++s;
-  }
-  DrawCursor(true);
-}
-
-void Terminal::Print(char c) {
-  auto newline = [this]() {
-    cursor_.x = 0;
-    if (cursor_.y < kRows - 1) {
-      ++cursor_.y;
-    } else {
-      Scroll1();
-    }
-  };
-
-  if (c == '\n') {
-    newline();
-  } else {
-    WriteAscii(*window_->Writer(), CalcCursorPos(), c, {255, 255, 255});
-    if (cursor_.x == kColumns - 1) {
-      newline();
-    } else {
-      ++cursor_.x;
-    }
-  }
-}
-
 void Terminal::ExecuteLine() {
   char* command = &linebuf_[0];
   char* first_arg = strchr(&linebuf_[0], ' ');
@@ -373,6 +324,7 @@ void Terminal::ExecuteLine() {
     *first_arg = 0;
     ++first_arg;
   }
+
   if (strcmp(command, "echo") == 0) {
     if (first_arg) {
       Print(first_arg);
@@ -397,11 +349,11 @@ void Terminal::ExecuteLine() {
     auto root_dir_entries = fat::GetSectorByCluster<fat::DirectoryEntry>(
         fat::boot_volume_image->root_cluster);
     auto entries_per_cluster =
-        fat::boot_volume_image->bytes_per_sector / sizeof(fat::DirectoryEntry);
+        fat::bytes_per_cluster / sizeof(fat::DirectoryEntry);
     char base[9], ext[4];
     char s[64];
     for (int i = 0; i < entries_per_cluster; ++i) {
-      fat::ReadName(root_dir_entries[i], base, ext);
+      ReadName(root_dir_entries[i], base, ext);
       if (base[0] == 0x00) {
         break;
       } else if (static_cast<uint8_t>(base[0]) == 0xe5) {
@@ -481,7 +433,7 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry,
     return err;
   }
   auto argv = reinterpret_cast<char**>(args_frame_addr.value);
-  int argv_len = 32;
+  int argv_len = 32;  // argv = 8x32 = 256 bytes
   auto argbuf = reinterpret_cast<char*>(args_frame_addr.value +
                                         sizeof(char**) * argv_len);
   int argbuf_len = 4096 - sizeof(char**) * argv_len;
@@ -500,14 +452,45 @@ Error Terminal::ExecuteFile(const fat::DirectoryEntry& file_entry,
   CallApp(argc.value, argv, 3 << 3 | 3, 4 << 3 | 3, entry_addr,
           stack_frame_addr.value + 4096 - 8);
 
-  // char s[64];
-  // sprintf(s, "app exited, ret = %d\n", ret);
-  // Print(s);
-
   const auto addr_first = GetFirstLoadAddress(elf_header);
   if (auto err = CleanPageMaps(LinearAddress4Level{addr_first})) {
     return err;
   }
+
+  return MAKE_ERROR(Error::kSuccess);
+}
+
+void Terminal::Print(char c) {
+  auto newline = [this]() {
+    cursor_.x = 0;
+    if (cursor_.y < kRows - 1) {
+      ++cursor_.y;
+    } else {
+      Scroll1();
+    }
+  };
+
+  if (c == '\n') {
+    newline();
+  } else {
+    WriteAscii(*window_->Writer(), CalcCursorPos(), c, {255, 255, 255});
+    if (cursor_.x == kColumns - 1) {
+      newline();
+    } else {
+      ++cursor_.x;
+    }
+  }
+}
+
+void Terminal::Print(const char* s) {
+  DrawCursor(false);
+
+  while (*s) {
+    Print(*s);
+    ++s;
+  }
+
+  DrawCursor(true);
 }
 
 Rectangle<int> Terminal::HistoryUpDown(int direction) {
