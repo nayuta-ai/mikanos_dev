@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
 #include "../syscall.h"
 
 int stack_ptr;
@@ -39,6 +40,6 @@ extern "C" void main(int argc, char** argv) {
   }
 
   printf("%ld\n", result);
-  SyscallExit(static_cast<int>(result));
+  exit(static_cast<int>(result));
   // return static_cast<int>(Pop());
 }
