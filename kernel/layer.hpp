@@ -67,6 +67,9 @@ class LayerManager {
    * The newly created layer is held in a container inside LayerManager.
    */
   Layer& NewLayer();
+  /** @brief Remove the specified layer */
+  void RemoveLayer(unsigned int id);
+
   /** @brief Draw the currently displayed layers. */
   void Draw(const Rectangle<int>& area) const;
   /** @brief Redraws within the drawing area of the window set on the specified
