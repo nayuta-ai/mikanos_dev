@@ -222,12 +222,12 @@ void InitializeTask() {
   task_manager = new TaskManager;
 
   __asm__("cli");
-  timer_manager->AddTimer(
-      Timer{timer_manager->CurrentTick() + kTaskTimerPeriod, kTaskTimerValue});
+  timer_manager->AddTimer(Timer{timer_manager->CurrentTick() + kTaskTimerPeriod,
+                                kTaskTimerValue, 1});
   __asm__("sti");
 }
 
-__attribute__((no_caller_saved_registers))
-extern "C" uint64_t GetCurrentTaskOSStackPointer() {
+__attribute__((no_caller_saved_registers)) extern "C" uint64_t
+GetCurrentTaskOSStackPointer() {
   return task_manager->CurrentTask().OSStackPointer();
 }
