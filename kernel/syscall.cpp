@@ -67,7 +67,7 @@ SYSCALL(OpenWindow) {
 
   __asm__("cli");
   const auto layer_id =
-      layer_manager->NewLayer().SetWindow(win).Move({x, y}).ID();
+      layer_manager->NewLayer().SetWindow(win).SetDraggable(true).Move({x, y}).ID();
   active_layer->Activate(layer_id);
 
   const auto task_id = task_manager->CurrentTask().ID();
