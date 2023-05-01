@@ -156,27 +156,13 @@ extern "C" void KernelMainNewStack(
   InitializeTask();
   Task& main_task = task_manager->CurrentTask();
   terminals = new std::map<uint64_t, Terminal*>;
-  task_manager->NewTask().InitContext(TaskTerminal, 0).Wakeup();
 
   usb::xhci::Initialize();
   InitializeKeyboard();
   InitializeMouse();
 
-  // uint8_t* p = reinterpret_cast<uint8_t*>(volume_image);
-  // printk("Volume Image:\n");
-  // for (int i = 0; i < 16; ++i) {
-  //   printk("%04x:", i * 16);
-  //   for (int j = 0; j < 8; ++j) {
-  //     printk(" %02x", *p);
-  //     ++p;
-  //   }
-  //   printk(" ");
-  //   for (int j = 0; j < 8; ++j) {
-  //     printk(" %02x", *p);
-  //     ++p;
-  //   }
-  //   printk("\n");
-  // }
+  task_manager->NewTask().InitContext(TaskTerminal, 0).Wakeup();
+
   char str[128];
 
   while (true) {
