@@ -4,6 +4,7 @@
 
 #include "console.hpp"
 #include "logger.hpp"
+#include "task.hpp"
 #include "timer.hpp"
 
 namespace {
@@ -195,6 +196,17 @@ int LayerManager::GetHeight(unsigned int id) {
 
 namespace {
 FrameBuffer* screen;
+
+Error SendWindowActiveMessage(unsigned int layer_id, int activate) {
+  auto task_it = layer_task_map->find(layer_id);
+  if (task_it == layer_task_map->end()) {
+    return MAKE_ERROR(Error::kNoSuchTask);
+  }
+
+  Message msg{Message::kWindowActive};
+  msg.arg.window_active.activate = activate;
+  return task_manager->SendMessage(task_it->second, msg);
+}
 }
 
 LayerManager* layer_manager;
@@ -214,6 +226,7 @@ void ActiveLayer::Activate(unsigned int layer_id) {
     Layer* layer = manager_.FindLayer(active_layer_);
     layer->GetWindow()->Deactivate();
     manager_.Draw(active_layer_);
+    SendWindowActiveMessage(active_layer_, 0);
   }
 
   active_layer_ = layer_id;
@@ -222,6 +235,7 @@ void ActiveLayer::Activate(unsigned int layer_id) {
     layer->GetWindow()->Activate();
     manager_.UpDown(active_layer_, manager_.GetHeight(mouse_layer_) - 1);
     manager_.Draw(active_layer_);
+    SendWindowActiveMessage(active_layer_, 1);
   }
 }
 
