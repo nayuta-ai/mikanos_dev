@@ -103,6 +103,16 @@ T* GetSectorByCluster(unsigned long cluster) {
  */
 void ReadName(const DirectoryEntry& entry, char* base, char* ext);
 
+/** @brief Copy the short name of the directory entry to dest.
+ * Copy "<base>" if the short name extension is empty, otherwise copy "<base>.
+ * <ext>" if the short name extension is not empty.
+ *
+ * @param entry Target directory entry from which the file name is obtained.
+ * @param dest An array large enough to contain the concatenated string of the
+ * base name and extension.
+ */
+void FormatName(const DirectoryEntry& entry, char* dest);
+
 static const unsigned long kEndOfClusterchain = 0x0ffffffflu;
 
 /** @brief Returns the next cluster number for the specified cluster.
@@ -117,9 +127,14 @@ unsigned long NextCluster(unsigned long cluster);
  * @param name 8+3 format file name (case insensitive)
  * @param directory_cluster The starting cluster of the directory (if omitted,
  * search from the root directory)
- * @return Entry representing the file. If not found, nullptr.
+ * @return An entry representing a file or directory, followed by a pair of
+ * flags indicating a trailing slash. nullptr if the file or directory is not
+ * found. true if the entry has a trailing slash. If the entry in the middle of
+ * the path is a file, the search is abandoned and the entry and true are
+ * returned.
  */
-DirectoryEntry* FindFile(const char* name, unsigned long directory_cluster = 0);
+std::pair<DirectoryEntry*, bool> FindFile(const char* path,
+                                          unsigned long directory_cluster = 0);
 
 bool NameIsEqual(const DirectoryEntry& entry, const char* name);
 
