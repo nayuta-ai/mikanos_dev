@@ -5,6 +5,7 @@ make ${MAKE_OPTS:-} -C kernel kernel.elf
 for MK in $(ls apps/*/Makefile)
 do
     APP_DIR=$(dirname $MK)
+    APPS_DIR=apps
     APP=$(basename $APP_DIR)
     make ${MAKE_OPTS:-} -C $APP_DIR $APP
 done
