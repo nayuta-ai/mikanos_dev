@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "error.hpp"
 #include "file.hpp"
 
 namespace fat {
@@ -148,6 +149,42 @@ bool NameIsEqual(const DirectoryEntry& entry, const char* name);
  * @return Number of bytes read.
  */
 size_t LoadFile(void* buf, size_t len, const DirectoryEntry& entry);
+
+bool IsEndOfClusterchain(unsigned long cluster);
+
+uint32_t* GetFAT();
+
+/** @brief Extend the cluster chain by the specified number of clusters.
+ * * @param eoc_cluster
+ * @param eoc_cluster Cluster number of one of the clusters in the cluster chain
+ * to be decompressed
+ * @param n number of clusters to be decompressed
+ * @return Cluster number of the last cluster in the chain after decompression
+ */
+unsigned long ExtendCluster(unsigned long eoc_cluster, size_t n);
+
+/** @brief Return one free entry in the specified directory.
+ * If the directory is full, the cluster is extended by one to make room for a
+ * free entry.
+ *
+ * @param dir_cluster directory to look for a free entry
+ * @return free entry
+ */
+DirectoryEntry* AllocateEntry(unsigned long dir_cluster);
+
+/** @brief Set short file name for directory entry.
+ *
+ * @param entry Directory entry for which the file name is to be set.
+ * @param name File name consisting of base name and extension joined by dots
+ */
+void SetFileName(DirectoryEntry& entry, const char* name);
+
+/** @brief Create a file entry at the specified path.
+ *
+ * @param path File path
+ * @return Newly created file entry
+ */
+WithError<DirectoryEntry*> CreateFile(const char* path);
 
 class FileDescriptor : public ::FileDescriptor {
  public:
