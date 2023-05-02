@@ -186,16 +186,28 @@ void SetFileName(DirectoryEntry& entry, const char* name);
  */
 WithError<DirectoryEntry*> CreateFile(const char* path);
 
+/** @brief Construct a chain consisting of the specified number of free
+ * clusters.
+ *
+ * @param n number of clusters
+ * @return First cluster number of the constructed chain
+ */
+unsigned long AllocateClusterChain(size_t n);
+
 class FileDescriptor : public ::FileDescriptor {
  public:
   explicit FileDescriptor(DirectoryEntry& fat_entry);
   size_t Read(void* buf, size_t len) override;
+  size_t Write(const void* buf, size_t len) override;
 
  private:
   DirectoryEntry& fat_entry_;
   size_t rd_off_ = 0;
   unsigned long rd_cluster_ = 0;
   size_t rd_cluster_off_ = 0;
+  size_t wr_off_ = 0;
+  unsigned long wr_cluster_ = 0;
+  size_t wr_cluster_off_ = 0;
 };
 
 }  // namespace fat
