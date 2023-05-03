@@ -41,6 +41,11 @@ class FrameID {
 
 static const FrameID kNullFrame{std::numeric_limits<size_t>::max()};
 
+struct MemoryStat {
+  size_t allocated_frames;
+  size_t total_frames;
+};
+
 /** @brief A class that manages memory on a frame-by-frame basis using a bitmap
 array.
 * Each bit of the bitmap corresponds to one frame, with a value of 0 indicating
@@ -81,6 +86,9 @@ class BitmapMemoryManager {
    */
   void SetMemoryRange(FrameID range_begin, FrameID range_end);
 
+  /** @brief Return the number of empty or all frame */
+  MemoryStat Stat() const;
+
  private:
   std::array<MapLineType, kFrameCount / kBitsPerMapLine> alloc_map_;
   /** @brief The start of the memory range managed by this memory manager. */
@@ -93,5 +101,5 @@ class BitmapMemoryManager {
   void SetBit(FrameID frame, bool allocated);
 };
 
-extern BitmapMemoryManager* memory_manager;
+extern BitmapMemoryManager *memory_manager;
 void InitializeMemoryManager(const MemoryMap &memory_map);
