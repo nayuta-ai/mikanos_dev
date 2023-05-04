@@ -11,5 +11,5 @@ done
 
 if [ "${1:-}" = "run" ]
 then
-    MIKANOS_DIR=$PWD APPS_DIR=apps $HOME/osbook/devenv/run_mikanos.sh
+    MIKANOS_DIR=$PWD APPS_DIR=apps RESOURCE_DIR=resource $HOME/osbook/devenv/run_mikanos.sh
 fi
