@@ -12,6 +12,13 @@ Provides a Window class that represents a display area.
 #include "frame_buffer.hpp"
 #include "graphics.hpp"
 
+enum class WindowRegion {
+  kTitleBar,
+  kCloseButton,
+  kBorder,
+  kOther,
+};
+
 /** @brief The Window class represents a graphics display area.
  * This includes not only windows with titles and menus, but also display areas
  * for the mouse cursor, etc.
@@ -80,6 +87,7 @@ class Window {
 
   virtual void Activate() {}
   virtual void Deactivate() {}
+  virtual WindowRegion GetWindowRegion(Vector2D<int> pos);
 
  private:
   int width_, height_;
@@ -119,6 +127,7 @@ class ToplevelWindow : public Window {
 
   virtual void Activate() override;
   virtual void Deactivate() override;
+  virtual WindowRegion GetWindowRegion(Vector2D<int> pos) override;
 
   InnerAreaWriter* InnerWriter() { return &inner_writer_; }
   Vector2D<int> InnerSize() const;
