@@ -9,7 +9,6 @@
 
 #include "app_event.hpp"
 #include "asmfunc.h"
-#include "fat.hpp"
 #include "font.hpp"
 #include "keyboard.hpp"
 #include "logger.hpp"
@@ -23,6 +22,7 @@ struct Result {
   uint64_t value;
   int error;
 };
+
 #define SYSCALL(name)                                                     \
   Result name(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, \
               uint64_t arg5, uint64_t arg6)
@@ -85,6 +85,7 @@ SYSCALL(OpenWindow) {
 
   return {layer_id, 0};
 }
+
 namespace {
 template <class Func, class... Args>
 Result DoWinFunc(Func f, uint64_t layer_id_flags, Args... args) {
@@ -97,6 +98,7 @@ Result DoWinFunc(Func f, uint64_t layer_id_flags, Args... args) {
   if (layer == nullptr) {
     return {0, EBADF};
   }
+
   const auto res = f(*layer->GetWindow(), args...);
   if (res.error) {
     return res;
@@ -361,6 +363,7 @@ SYSCALL(ReadFile) {
 
 SYSCALL(DemandPages) {
   const size_t num_pages = arg1;
+  // const int flags = arg2;
   __asm__("cli");
   auto& task = task_manager->CurrentTask();
   __asm__("sti");
@@ -373,7 +376,7 @@ SYSCALL(DemandPages) {
 SYSCALL(MapFile) {
   const int fd = arg1;
   size_t* file_size = reinterpret_cast<size_t*>(arg2);
-
+  // const int flags = arg3;
   __asm__("cli");
   auto& task = task_manager->CurrentTask();
   __asm__("sti");
@@ -391,6 +394,7 @@ SYSCALL(MapFile) {
 }
 
 #undef SYSCALL
+
 }  // namespace syscall
 
 using SyscallFuncType = syscall::Result(uint64_t, uint64_t, uint64_t, uint64_t,
@@ -415,7 +419,7 @@ extern "C" std::array<SyscallFuncType*, 0x10> syscall_table{
 };
 
 void InitializeSyscall() {
-  WriteMSR(kIA32_EFER, 0x501u);
+  WriteMSR(kIA32_EFER, 0x0501u);
   WriteMSR(kIA32_LSTAR, reinterpret_cast<uint64_t>(SyscallEntry));
   WriteMSR(kIA32_STAR, static_cast<uint64_t>(8) << 32 |
                            static_cast<uint64_t>(16 | 3) << 48);
